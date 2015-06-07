@@ -12,11 +12,10 @@ import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
 import com.mxgraph.view.mxEdgeStyle.mxEdgeStyleFunction;
 import com.mxgraph.view.mxPerimeter.mxPerimeterFunction;
 
+import java.awt.*;
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Implements a view for the graph. This class is in charge of computing the
@@ -448,8 +447,9 @@ public class mxGraphView extends mxEventSource {
           // Updates the cell state's bounds
           state.setX(scale * (translate.getX() + state.getOrigin().getX()));
           state.setY(scale * (translate.getY() + state.getOrigin().getY()));
-          state.setWidth(scale * geo.getWidth());
-          state.setHeight(scale * geo.getHeight());
+          Dimension dimension = calcCellDimension(state, scale);
+          state.setWidth(scale * dimension.getWidth());
+          state.setHeight(scale * dimension.getHeight());
 
           if (model.isVertex(cell)) {
             updateVertexLabelOffset(state);
@@ -477,6 +477,13 @@ public class mxGraphView extends mxEventSource {
         validateBounds(state, model.getChildAt(cell, i));
       }
     }
+  }
+
+  private Dimension calcCellDimension(mxCellState state, double scale) {
+    String label = graph.getLabel(state.getCell());
+
+    mxRectangle labelSize = mxUtils.getLabelSize(label, Collections.<String, Object> emptyMap(), scale);
+    return new Dimension((int)labelSize.getWidth() + 5, (int)labelSize.getHeight() + 3);
   }
 
   /**
@@ -623,11 +630,7 @@ public class mxGraphView extends mxEventSource {
     Map<String, Object> style = state.getStyle();
 
     // Applies word wrapping to non-HTML labels and stores the result in the state
-    if (label != null &&
-        label.length() > 0 &&
-        !graph.isHtmlLabel(state.getCell()) &&
-        !graph.getModel().isEdge(state.getCell()) &&
-        mxUtils.getString(style, mxConstants.STYLE_WHITE_SPACE, "nowrap").equals("wrap")) {
+    if (label.length() > 0 && !graph.getModel().isEdge(state.getCell()) && mxUtils.getString(style, mxConstants.STYLE_WHITE_SPACE, "nowrap").equals("wrap")) {
       double w = getWordWrapWidth(state);
 
       // The lines for wrapping within the given width are calculated for no
@@ -641,10 +644,10 @@ public class mxGraphView extends mxEventSource {
         mxUtils.wordWrap(label, mxUtils.getFontMetrics(mxUtils.getFont(state.getStyle())), w * mxConstants.LABEL_SCALE_BUFFER);
 
       if (lines.length > 0) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         for (String line : lines) {
-          buffer.append(line + '\n');
+          buffer.append(line).append('\n');
         }
 
         label = buffer.substring(0, buffer.length() - 1);
@@ -694,7 +697,7 @@ public class mxGraphView extends mxEventSource {
     else if (state.getLabel() != null) {
       mxRectangle vertexBounds = (!graph.getModel().isEdge(cell)) ? state : null;
       state.setLabelBounds(
-        mxUtils.getLabelPaintBounds(state.getLabel(), style, graph.isHtmlLabel(cell), state.getAbsoluteOffset(), vertexBounds, scale));
+        mxUtils.getLabelPaintBounds(state.getLabel(), style, state.getAbsoluteOffset(), vertexBounds, scale));
     }
   }
 

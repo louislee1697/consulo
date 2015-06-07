@@ -18,17 +18,17 @@ package org.consulo.diagram.builder.impl;
 import com.intellij.util.containers.HashMap;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxRectangle;
-import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import org.consulo.diagram.builder.GraphBuilder;
 import org.consulo.diagram.builder.GraphNode;
 import org.consulo.diagram.builder.GraphPositionStrategy;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -53,17 +53,33 @@ public class GraphBuilderImpl implements GraphBuilder {
     graph.setCellsEditable(false);
     graph.setAllowDanglingEdges(false);
 
+    mxGraphComponent mxGraphComponent = new mxGraphComponent(graph){
+      @Override
+      public void addNotify() {
+        super.addNotify();
+        build(this);
+      }
+    };
+    mxGraphComponent.setGridVisible(true);
+
+    return mxGraphComponent;
+  }
+
+  private void build(mxGraphComponent mxGraphComponent) {
+    Container componentParent = mxGraphComponent.getParent();
+    mxGraph graph = mxGraphComponent.getGraph();
+
     Object parent = graph.getDefaultParent();
+
 
     graph.getModel().beginUpdate();
     try
     {
       Map<GraphNode<?>, Object> map = new HashMap<GraphNode<?>, Object>();
 
-      int i = 1;
+      int i = 0;
       for (GraphNode<?> graphNode : myGraphNodes) {
-        mxRectangle labelSize = mxUtils.getLabelSize(graphNode.getValue().toString(), Collections.<String, Object> emptyMap(), false, 1.);
-        mxCell vertex = graph.insertVertex(parent, null, graphNode.getValue(), 0, 0, labelSize.getWidth() + 5, labelSize.getHeight() + 6);
+        mxCell vertex = graph.insertVertex(parent, graphNode.getName(), graphNode, 0, i * 100, 0, 0);
 
         map.put(graphNode, vertex);
         i++;
@@ -73,7 +89,8 @@ public class GraphBuilderImpl implements GraphBuilder {
         List<GraphNode<?>> arrowNodes = entry.getKey().getArrowNodes();
 
         for (GraphNode<?> arrowNode : arrowNodes) {
-          graph.insertEdge(parent, null, null, entry.getValue(), map.get(arrowNode));
+          mxCell mxCell = graph.insertEdge(parent, null, null, entry.getValue(), map.get(arrowNode));
+          mxCell.setStyle(mxConstants.STYLE_STROKECOLOR + "=" + "#FF0000");
         }
       }
     }
@@ -81,18 +98,12 @@ public class GraphBuilderImpl implements GraphBuilder {
     {
       graph.getModel().endUpdate();
     }
-
-    mxGraphComponent mxGraphComponent = new mxGraphComponent(graph){
-
-    };
-
-    return mxGraphComponent;
   }
 
   @NotNull
   @Override
-  public <E> GraphNode<E> createNode(E value, GraphPositionStrategy strategy) {
-    GraphNodeImpl<E> graphNode = new GraphNodeImpl<E>(value, strategy);
+  public <E> GraphNode<E> createNode(@NotNull String name, @Nullable Icon icon, @Nullable E value, GraphPositionStrategy strategy) {
+    GraphNodeImpl<E> graphNode = new GraphNodeImpl<E>(name, icon, value, strategy);
     myGraphNodes.add(graphNode);
     return graphNode;
   }

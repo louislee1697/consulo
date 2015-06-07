@@ -16,6 +16,7 @@
 package org.consulo.diagram.builder;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -28,5 +29,5 @@ public interface GraphBuilder {
   JComponent getComponent();
 
   @NotNull
-  <E> GraphNode<E> createNode(E value, GraphPositionStrategy strategy);
+  <E> GraphNode<E> createNode(@NotNull String name, @Nullable Icon icon, @Nullable E value, GraphPositionStrategy strategy);
 }

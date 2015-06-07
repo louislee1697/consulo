@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.intellij.icons.AllIcons;
 import org.consulo.diagram.builder.GraphBuilder;
 import org.consulo.diagram.builder.GraphBuilderFactory;
 import org.consulo.diagram.builder.GraphNode;
@@ -21,6 +22,7 @@ import org.consulo.diagram.builder.GraphPositionStrategy;
 import org.consulo.diagram.builder.impl.GraphBuilderFactoryImpl;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author VISTALL
@@ -34,17 +36,21 @@ public class GraphMain extends JFrame {
 
     GraphBuilder builder = graphBuilderFactory.createBuilder();
 
-    GraphNode<?> testNode1 = builder.createNode("TestNode1", GraphPositionStrategy.CENTER);
-    GraphNode<?> testNode2 = builder.createNode("TestNode2", GraphPositionStrategy.BOTTOM);
+    GraphNode<?> testNode1 = builder.createNode("Test Node1", AllIcons.Nodes.Class, null, GraphPositionStrategy.CENTER);
+    GraphNode<?> testNode2 = builder.createNode("Test Node2", AllIcons.Nodes.Class, null, GraphPositionStrategy.BOTTOM);
 
     testNode1.makeArrow(testNode2);
 
-    getContentPane().add(builder.getComponent());
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(builder.getComponent(), BorderLayout.CENTER);
+    setContentPane(panel);
   }
 
   public static void main(String[] args) {
     GraphMain main = new GraphMain();
     main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    main.setLocationByPlatform(false);
+    main.setLocationRelativeTo(null);
     main.setSize(400, 320);
     main.setVisible(true);
   }

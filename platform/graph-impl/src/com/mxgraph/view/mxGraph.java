@@ -11,6 +11,8 @@ import com.mxgraph.model.*;
 import com.mxgraph.model.mxGraphModel.*;
 import com.mxgraph.util.*;
 import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
+import org.consulo.util.pointers.Named;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
 import java.awt.*;
@@ -447,11 +449,6 @@ public class mxGraph extends mxEventSource {
   protected boolean labelsVisible = true;
 
   /**
-   * Specifies the return value for isHtmlLabel. Default is false.
-   */
-  protected boolean htmlLabels = false;
-
-  /**
    * Specifies if nesting of swimlanes is allowed. Default is true.
    */
   protected boolean swimlaneNesting = true;
@@ -504,8 +501,7 @@ public class mxGraph extends mxEventSource {
    */
   protected mxIEventListener graphModelChangeHandler = new mxIEventListener() {
     public void invoke(Object sender, mxEventObject evt) {
-      mxRectangle dirty =
-        graphModelChanged((mxIGraphModel)sender, (List<mxUndoableChange>)((mxUndoableEdit)evt.getProperty("edit")).getChanges());
+      mxRectangle dirty = graphModelChanged((mxIGraphModel)sender, (List<mxUndoableChange>)((mxUndoableEdit)evt.getProperty("edit")).getChanges());
       repaint(dirty);
     }
   };
@@ -2043,18 +2039,10 @@ public class mxGraph extends mxEventSource {
    * @param relative Specifies if the geometry should be relative.
    * @return Returns the new vertex that has been inserted.
    */
-  public mxCell insertVertex(Object parent,
-                             String id,
-                             Object value,
-                             double x,
-                             double y,
-                             double width,
-                             double height,
-                             String style,
-                             boolean relative) {
+  public mxCell insertVertex(Object parent, String id, Object value, double x, double y, double width, double height, String style, boolean relative) {
     mxCell vertex = createVertex(parent, id, value, x, y, width, height, style, relative);
 
-    return (mxCell) addCell(vertex, parent);
+    return (mxCell)addCell(vertex, parent);
   }
 
   /**
@@ -2088,15 +2076,7 @@ public class mxGraph extends mxEventSource {
    * @param relative Specifies if the geometry should be relative.
    * @return Returns the new vertex to be inserted.
    */
-  public mxCell createVertex(Object parent,
-                             String id,
-                             Object value,
-                             double x,
-                             double y,
-                             double width,
-                             double height,
-                             String style,
-                             boolean relative) {
+  public mxCell createVertex(Object parent, String id, Object value, double x, double y, double width, double height, String style, boolean relative) {
     mxGeometry geometry = new mxGeometry(x, y, width, height);
     geometry.setRelative(relative);
 
@@ -2132,7 +2112,7 @@ public class mxGraph extends mxEventSource {
   public mxCell insertEdge(Object parent, String id, Object value, Object source, Object target, String style) {
     mxCell edge = createEdge(parent, id, value, source, target, style);
 
-    return (mxCell) addEdge(edge, parent, source, target, null);
+    return (mxCell)addEdge(edge, parent, source, target, null);
   }
 
   /**
@@ -2361,9 +2341,8 @@ public class mxGraph extends mxEventSource {
           }
         }
 
-        fireEvent(
-          new mxEventObject(mxEvent.CELLS_ADDED, "cells", cells, "parent", parent, "index", index, "source", source, "target", target,
-                            "absolute", absolute));
+        fireEvent(new mxEventObject(mxEvent.CELLS_ADDED, "cells", cells, "parent", parent, "index", index, "source", source, "target", target, "absolute",
+                                    absolute));
 
       }
       finally {
@@ -2972,7 +2951,7 @@ public class mxGraph extends mxEventSource {
         String value = getLabel(cell);
 
         if (value != null && value.length() > 0) {
-          mxRectangle size = mxUtils.getLabelSize(value, style, isHtmlLabel(cell), 1);
+          mxRectangle size = mxUtils.getLabelSize(value, style, 1);
           double width = size.getWidth() + dx;
           double height = size.getHeight() + dy;
 
@@ -3048,11 +3027,10 @@ public class mxGraph extends mxEventSource {
           mxRectangle tmp = bounds[i];
           mxGeometry geo = model.getGeometry(cells[i]);
 
-          if (geo != null &&
-              (geo.getX() != tmp.getX() ||
-               geo.getY() != tmp.getY() ||
-               geo.getWidth() != tmp.getWidth() ||
-               geo.getHeight() != tmp.getHeight())) {
+          if (geo != null && (geo.getX() != tmp.getX() ||
+                              geo.getY() != tmp.getY() ||
+                              geo.getWidth() != tmp.getWidth() ||
+                              geo.getHeight() != tmp.getHeight())) {
             geo = (mxGeometry)geo.clone();
 
             if (geo.isRelative()) {
@@ -3186,8 +3164,7 @@ public class mxGraph extends mxEventSource {
           cellsAdded(cells, target, index, null, null, true);
         }
 
-        fireEvent(new mxEventObject(mxEvent.MOVE_CELLS, "cells", cells, "dx", dx, "dy", dy, "clone", clone, "target", target, "location",
-                                    location));
+        fireEvent(new mxEventObject(mxEvent.MOVE_CELLS, "cells", cells, "dx", dx, "dy", dy, "clone", clone, "target", target, "location", location));
       }
       finally {
         model.endUpdate();
@@ -3330,11 +3307,10 @@ public class mxGraph extends mxEventSource {
 
       if (geo != null && area != null) {
         // Keeps child within the content area of the parent
-        if (!geo.isRelative() &&
-            (geo.getX() < area.getX() ||
-             geo.getY() < area.getY() ||
-             area.getWidth() < geo.getX() + geo.getWidth() ||
-             area.getHeight() < geo.getY() + geo.getHeight())) {
+        if (!geo.isRelative() && (geo.getX() < area.getX() ||
+                                  geo.getY() < area.getY() ||
+                                  area.getWidth() < geo.getX() + geo.getWidth() ||
+                                  area.getHeight() < geo.getY() + geo.getHeight())) {
           double overlap = getOverlap(cell);
 
           if (area.getWidth() > 0) {
@@ -3508,8 +3484,7 @@ public class mxGraph extends mxEventSource {
     mxPoint point = null;
 
     if (vertex != null && constraint.point != null) {
-      point = new mxPoint(vertex.getX() + constraint.getPoint().getX() * vertex.getWidth(),
-                          vertex.getY() + constraint.getPoint().getY() * vertex.getHeight());
+      point = new mxPoint(vertex.getX() + constraint.getPoint().getX() * vertex.getWidth(), vertex.getY() + constraint.getPoint().getY() * vertex.getHeight());
     }
 
     if (point != null && constraint.perimeter) {
@@ -4324,23 +4299,6 @@ public class mxGraph extends mxEventSource {
   }
 
   /**
-   * @param value the htmlLabels to set
-   */
-  public void setHtmlLabels(boolean value) {
-    boolean oldValue = htmlLabels;
-    htmlLabels = value;
-
-    changeSupport.firePropertyChange("htmlLabels", oldValue, htmlLabels);
-  }
-
-  /**
-   *
-   */
-  public boolean isHtmlLabels() {
-    return htmlLabels;
-  }
-
-  /**
    * Returns the textual representation for the given cell.
    *
    * @param cell Cell to be converted to a string.
@@ -4348,7 +4306,9 @@ public class mxGraph extends mxEventSource {
    */
   public String convertValueToString(Object cell) {
     Object result = model.getValue(cell);
-
+    if (result instanceof Named) {
+      return ((Named)result).getName();
+    }
     return (result != null) ? result.toString() : "";
   }
 
@@ -4360,6 +4320,7 @@ public class mxGraph extends mxEventSource {
    * @param cell <mxCell> whose label should be returned.
    * @return Returns the label for the given cell.
    */
+  @NotNull
   public String getLabel(Object cell) {
     String result = "";
 
@@ -4395,17 +4356,6 @@ public class mxGraph extends mxEventSource {
     finally {
       model.endUpdate();
     }
-  }
-
-  /**
-   * Returns true if the label must be rendered as HTML markup. The default
-   * implementation returns <htmlLabels>.
-   *
-   * @param cell <mxCell> whose label should be displayed as HTML markup.
-   * @return Returns true if the given cell label is HTML markup.
-   */
-  public boolean isHtmlLabel(Object cell) {
-    return isHtmlLabels();
   }
 
   /**
@@ -4829,7 +4779,7 @@ public class mxGraph extends mxEventSource {
    * @param source   Boolean indicating if the source or target terminal is to be
    *                 disconnected.
    * @return Returns true if the given edge can be disconnected from the given
-   *         terminal.
+   * terminal.
    */
   public boolean isCellDisconnectable(Object cell, Object terminal, boolean source) {
     return isCellsDisconnectable() && !isCellLocked(cell);
@@ -5431,8 +5381,7 @@ public class mxGraph extends mxEventSource {
    * @return Returns true if the given cell is a valid source terminal.
    */
   public boolean isValidSource(Object cell) {
-    return (cell == null && allowDanglingEdges) ||
-           (cell != null && (!model.isEdge(cell) || isConnectableEdges()) && isCellConnectable(cell));
+    return (cell == null && allowDanglingEdges) || (cell != null && (!model.isEdge(cell) || isConnectableEdges()) && isCellConnectable(cell));
   }
 
   /**
@@ -5456,7 +5405,7 @@ public class mxGraph extends mxEventSource {
    * @param source Object that represents the source cell.
    * @param target Object that represents the target cell.
    * @return Returns true if the the connection between the given terminals
-   *         is valid.
+   * is valid.
    */
   public boolean isValidConnection(Object source, Object target) {
     return isValidSource(source) && isValidTarget(target) && (isAllowLoops() || source != target);
@@ -5491,7 +5440,7 @@ public class mxGraph extends mxEventSource {
    *
    * @param cell
    * @return Returns the overlapping value for the given cell inside its
-   *         parent.
+   * parent.
    */
   public double getOverlap(Object cell) {
     return (isAllowOverlapParent(cell)) ? getDefaultOverlap() : 0;
@@ -5619,7 +5568,7 @@ public class mxGraph extends mxEventSource {
    * @param cell  Object that represents the possible drop target.
    * @param cells Objects that are going to be dropped.
    * @return Returns true if the cell is a valid drop target for the given
-   *         cells.
+   * cells.
    */
   public boolean isValidDropTarget(Object cell, Object[] cells) {
     return cell != null &&
@@ -5634,7 +5583,7 @@ public class mxGraph extends mxEventSource {
    * @param target Object that represents the edge to be splitted.
    * @param cells  Array of cells to add into the given edge.
    * @return Returns true if the given edge may be splitted by the given
-   *         cell.
+   * cell.
    */
   public boolean isSplitTarget(Object target, Object[] cells) {
     if (target != null && cells != null && cells.length == 1) {
@@ -5676,7 +5625,7 @@ public class mxGraph extends mxEventSource {
       cell = swimlane;
     }
                 /*else if (swimlane != null)
-		{
+        {
 			// Checks if the cell is an ancestor of the swimlane
 			// under the mouse and uses the swimlane in that case
 			Object tmp = model.getParent(swimlane);
@@ -5976,8 +5925,8 @@ public class mxGraph extends mxEventSource {
    * @param parent  the possible parent cell
    * @param recurse whether or not to recurse the child ancestors
    * @return whether or not the specified parent is a valid
-   *         ancestor of the specified cell, either direct or indirectly
-   *         based on whether ancestor recursion is enabled.
+   * ancestor of the specified cell, either direct or indirectly
+   * based on whether ancestor recursion is enabled.
    */
   public boolean isValidAncestor(Object cell, Object parent, boolean recurse) {
     return (recurse ? model.isAncestor(parent, cell) : model.getParent(cell) == parent);
@@ -6643,7 +6592,7 @@ public class mxGraph extends mxEventSource {
         String label = state.getLabel();
 
         if (label != null && state.getLabelBounds() != null) {
-          lab = canvas.drawLabel(label, state, isHtmlLabel(cell));
+          lab = canvas.drawLabel(label, state, false);
         }
       }
 

@@ -16,7 +16,9 @@
 package org.consulo.diagram.builder;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.List;
 
 /**
@@ -34,6 +36,13 @@ public interface GraphNode<T> {
   @NotNull
   List<GraphNode<?>> getArrowNodes();
 
+  @NotNull
+  String getName();
+
+  @Nullable
+  Icon getIcon();
+
+  @Nullable
   T getValue();
 
   GraphPositionStrategy getStrategy();

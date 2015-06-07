@@ -72,26 +72,8 @@ public class mxUtils {
    * markup in the label is computed as HTML and all newlines inside the HTML
    * body are converted into linebreaks.
    */
-  public static mxRectangle getLabelSize(String label, Map<String, Object> style, boolean isHtml, double scale) {
-    return getLabelSize(label, style, isHtml, scale, 0);
-  }
-
-  /**
-   * Returns the size for the given label. If isHtml is true then any HTML
-   * markup in the label is computed as HTML and all newlines inside the HTML
-   * body are converted into linebreaks.
-   */
-  public static mxRectangle getLabelSize(String label, Map<String, Object> style, boolean isHtml, double scale, double htmlWrapWidth) {
-    mxRectangle size;
-
-    if (isHtml) {
-      size = getSizeForHtml(getBodyMarkup(label, true), style, scale, htmlWrapWidth);
-    }
-    else {
-      size = getSizeForString(label, getFont(style), scale);
-    }
-
-    return size;
+  public static mxRectangle getLabelSize(String label, Map<String, Object> style, double scale) {
+    return getSizeForString(label, getFont(style), scale);
   }
 
   /**
@@ -120,19 +102,9 @@ public class mxUtils {
   /**
    * Returns the paint bounds for the given label.
    */
-  public static mxRectangle getLabelPaintBounds(String label,
-                                                Map<String, Object> style,
-                                                boolean isHtml,
-                                                mxPoint offset,
-                                                mxRectangle vertexBounds,
-                                                double scale) {
-    double wrapWidth = 0;
+  public static mxRectangle getLabelPaintBounds(String label, Map<String, Object> style, mxPoint offset, mxRectangle vertexBounds, double scale) {
 
-    if (isHtml && vertexBounds != null && mxUtils.getString(style, mxConstants.STYLE_WHITE_SPACE, "nowrap").equals("wrap")) {
-      wrapWidth = vertexBounds.getWidth();
-    }
-
-    mxRectangle size = mxUtils.getLabelSize(label, style, isHtml, scale, wrapWidth);
+    mxRectangle size = mxUtils.getLabelSize(label, style, scale);
 
     // Measures font with full scale and scales back
     size.setWidth(size.getWidth() / scale);
@@ -450,42 +422,6 @@ public class mxUtils {
     }
 
     return result.toArray(new String[result.size()]);
-  }
-
-  /**
-   * Returns an mxRectangle with the size (width and height in pixels) of the
-   * given HTML markup.
-   *
-   * @param markup HTML markup whose size should be returned.
-   */
-  public static mxRectangle getSizeForHtml(String markup, Map<String, Object> style, double scale, double wrapWidth) {
-    mxLightweightLabel textRenderer = mxLightweightLabel.getSharedInstance();
-
-    if (textRenderer != null) {
-      // First run measures size with no wrapping
-      textRenderer.setText(createHtmlDocument(style, markup));
-      Dimension size = textRenderer.getPreferredSize();
-
-      // Second run measures size with wrapping if required.
-      // Note that this is only required because max-width
-      // is not supported and we can't get the width of an
-      // inner HTML element (or is this possible?).
-      if (wrapWidth > 0) {
-        textRenderer.setText(
-          createHtmlDocument(style, markup, 1, (int)Math.ceil(wrapWidth * mxConstants.PX_PER_PIXEL - mxConstants.LABEL_INSET * scale)));
-        Dimension size2 = textRenderer.getPreferredSize();
-
-        // Uses wrapped text size if any text was actually wrapped
-        if (size2.width < size.width) {
-          size = size2;
-        }
-      }
-
-      return new mxRectangle(0, 0, size.width * scale, size.height * scale);
-    }
-    else {
-      return getSizeForString(markup, getFont(style), scale);
-    }
   }
 
   /**
@@ -1680,22 +1616,6 @@ public class mxUtils {
    */
   public static Document createDocument() {
     return mxDomUtils.createDocument();
-  }
-
-  /**
-   * Creates a new SVG document for the given width and height.
-   *
-   * @deprecated Use <code>mxDomUtils.createSvgDocument(int, int)</code> (Jan 2012)
-   */
-  public static Document createSvgDocument(int width, int height) {
-    return mxDomUtils.createSvgDocument(width, height);
-  }
-
-  /**
-   * @deprecated Use <code>mxDomUtils.createVmlDocument</code> (Jan 2012)
-   */
-  public static Document createVmlDocument() {
-    return mxDomUtils.createVmlDocument();
   }
 
   /**

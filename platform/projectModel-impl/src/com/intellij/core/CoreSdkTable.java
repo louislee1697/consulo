@@ -15,13 +15,11 @@
  */
 package com.intellij.core;
 
-import com.intellij.openapi.projectRoots.SdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkType;
+import com.intellij.openapi.projectRoots.SdkTable;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.util.Comparing;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.mustbe.consulo.RequiredWriteAction;
 
 import java.util.ArrayList;
@@ -47,23 +45,10 @@ public class CoreSdkTable extends SdkTable {
 
   @NotNull
   @Override
-  public Sdk[] getAllSdks() {
+  public Sdk[] getSdks() {
     synchronized (mySdks) {
       return mySdks.toArray(new Sdk[mySdks.size()]);
     }
-  }
-
-  @Override
-  public List<Sdk> getSdksOfType(SdkTypeId type) {
-    List<Sdk> result = new ArrayList<Sdk>();
-    synchronized (mySdks) {
-      for (Sdk sdk : mySdks) {
-        if (sdk.getSdkType() == type) {
-          result.add(sdk);
-        }
-      }
-    }
-    return result;
   }
 
   @RequiredWriteAction
@@ -96,17 +81,6 @@ public class CoreSdkTable extends SdkTable {
   @Override
   public SdkTypeId getSdkTypeByName(String name) {
     return CoreSdkType.INSTANCE;
-  }
-
-  @Nullable
-  @Override
-  public Sdk findPredefinedSdkByType(@NotNull SdkTypeId sdkType) {
-    for (Sdk sdk : mySdks) {
-      if(sdk.isPredefined() && sdk.getSdkType() == sdkType) {
-        return sdk;
-      }
-    }
-    return null;
   }
 
   @NotNull

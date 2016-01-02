@@ -25,6 +25,7 @@ import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.projectRoots.impl.SdkImpl;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.ui.OrderRootTypeUIFactory;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.ActionCallback;
@@ -71,7 +72,7 @@ public abstract class BaseSdkEditor implements Configurable, Place.Navigator {
   private JPanel myMainPanel;
 
   @NotNull
-  private final SdkModel mySdkModel;
+  private final ProjectSdksModel mySdkModel;
   private JLabel myHomeFieldLabel;
   private String myVersionString;
 
@@ -80,7 +81,7 @@ public abstract class BaseSdkEditor implements Configurable, Place.Navigator {
 
   protected final Disposable myDisposable = Disposer.newDisposable();
 
-  public BaseSdkEditor(@NotNull SdkModel sdkModel, @NotNull SdkImpl sdk) {
+  public BaseSdkEditor(@NotNull ProjectSdksModel sdkModel, @NotNull SdkImpl sdk) {
     mySdkModel = sdkModel;
     mySdk = sdk;
     createMainPanel();

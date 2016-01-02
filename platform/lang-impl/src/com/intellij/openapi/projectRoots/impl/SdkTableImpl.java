@@ -110,31 +110,8 @@ public class SdkTableImpl extends SdkTable implements PersistentStateComponent<E
 
   @NotNull
   @Override
-  public Sdk[] getAllSdks() {
+  public Sdk[] getSdks() {
     return mySdks.toArray(new Sdk[mySdks.size()]);
-  }
-
-  @Override
-  public List<Sdk> getSdksOfType(final SdkTypeId type) {
-    List<Sdk> result = new ArrayList<Sdk>();
-    final Sdk[] sdks = getAllSdks();
-    for (Sdk sdk : sdks) {
-      if (sdk.getSdkType() == type) {
-        result.add(sdk);
-      }
-    }
-    return result;
-  }
-
-  @Override
-  @Nullable
-  public Sdk findPredefinedSdkByType(@NotNull SdkTypeId sdkType) {
-    for (Sdk sdk : mySdks) {
-      if(sdk.isPredefined() && sdk.getSdkType() == sdkType) {
-        return sdk;
-      }
-    }
-    return null;
   }
 
   @Override

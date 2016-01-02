@@ -15,10 +15,10 @@
  */
 package com.intellij.openapi.projectRoots.ui;
 
-import com.intellij.openapi.projectRoots.SdkModel;
 import com.intellij.openapi.projectRoots.impl.SdkImpl;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.ui.OrderRootTypeUIFactory;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.ui.TabbedPaneWrapper;
 import com.intellij.ui.navigation.History;
@@ -44,7 +44,7 @@ public class SdkEditor extends BaseSdkEditor {
 
   private TabbedPaneWrapper myTabbedPane;
 
-  public SdkEditor(@NotNull SdkModel sdkModel, @NotNull History history, @NotNull SdkImpl sdk) {
+  public SdkEditor(@NotNull ProjectSdksModel sdkModel, @NotNull History history, @NotNull SdkImpl sdk) {
     super(sdkModel, sdk);
     myHistory = history;
   }

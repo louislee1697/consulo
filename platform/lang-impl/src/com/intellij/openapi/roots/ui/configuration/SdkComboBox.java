@@ -70,37 +70,37 @@ public class SdkComboBox extends ComboBoxWithWidePopup {
   @Nullable
   private final Condition<SdkTypeId> myCreationFilter;
 
-  public SdkComboBox(@NotNull final ProjectSdksModel sdksModel) {
+  public SdkComboBox(@NotNull final SdkModel sdksModel) {
     this(sdksModel, null, false);
   }
 
-  public SdkComboBox(@NotNull ProjectSdksModel sdksModel,
+  public SdkComboBox(@NotNull SdkModel sdksModel,
                      @Nullable Condition<SdkTypeId> filter,
                      boolean withNoneItem) {
     this(sdksModel, filter, filter, withNoneItem);
   }
 
-  public SdkComboBox(@NotNull ProjectSdksModel sdksModel,
+  public SdkComboBox(@NotNull SdkModel sdksModel,
                      @Nullable Condition<SdkTypeId> filter,
                      @Nullable String nullItemName) {
     this(sdksModel, filter, filter, nullItemName, null);
   }
 
-  public SdkComboBox(@NotNull ProjectSdksModel sdksModel,
+  public SdkComboBox(@NotNull SdkModel sdksModel,
                      @Nullable Condition<SdkTypeId> filter,
                      @Nullable Condition<SdkTypeId> creationFilter,
                      boolean withNoneItem) {
     this(sdksModel, filter, creationFilter, withNoneItem ? ProjectBundle.message("sdk.combo.box.item") : null, null);
   }
 
-  public SdkComboBox(@NotNull ProjectSdksModel sdksModel,
+  public SdkComboBox(@NotNull SdkModel sdksModel,
                      @Nullable Condition<SdkTypeId> filter,
                      @Nullable Condition<SdkTypeId> creationFilter,
                      @Nullable String nullItemName) {
     this(sdksModel, filter, creationFilter, nullItemName, null);
   }
 
-  public SdkComboBox(@NotNull ProjectSdksModel sdksModel,
+  public SdkComboBox(@NotNull SdkModel sdksModel,
                      @Nullable Condition<SdkTypeId> filter,
                      @Nullable Condition<SdkTypeId> creationFilter,
                      @Nullable final String nullItemName,

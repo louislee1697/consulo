@@ -34,7 +34,7 @@ public abstract class PredefinedBundlesProvider {
 
   @NotNull
   public SdkImpl createSdkWithName(@NotNull SdkType sdkType, @NotNull String suggestName) {
-    String uniqueSdkName = SdkConfigurationUtil.createUniqueSdkName(suggestName + SdkConfigurationUtil.PREDEFINED_PREFIX, SdkTable.getInstance().getAllSdks());
+    String uniqueSdkName = SdkConfigurationUtil.createUniqueSdkName(suggestName + SdkConfigurationUtil.PREDEFINED_PREFIX, SdkTable.getInstance());
 
     return new SdkImpl(uniqueSdkName, sdkType);
   }

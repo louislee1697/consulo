@@ -20,10 +20,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.ProjectBundle;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkAdditionalData;
-import com.intellij.openapi.projectRoots.SdkTable;
-import com.intellij.openapi.projectRoots.SdkType;
+import com.intellij.openapi.projectRoots.*;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
@@ -32,6 +29,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mustbe.consulo.RequiredDispatchThread;
 
 import java.util.*;
 
@@ -69,6 +67,7 @@ public class SdkConfigurationUtil {
     return descriptor;
   }
 
+  @RequiredDispatchThread
   public static void addSdk(@NotNull final Sdk sdk) {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
@@ -78,6 +77,7 @@ public class SdkConfigurationUtil {
     });
   }
 
+  @RequiredDispatchThread
   public static void removeSdk(final Sdk sdk) {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
@@ -88,7 +88,7 @@ public class SdkConfigurationUtil {
   }
 
   @Nullable
-  public static Sdk setupSdk(final Sdk[] allSdks,
+  public static Sdk setupSdk(final SdkModel sdkModel,
                              final VirtualFile homeDir,
                              final SdkType sdkType,
                              final boolean silent,
@@ -105,8 +105,8 @@ public class SdkConfigurationUtil {
       }
       else {
         sdkName = customSdkSuggestedName == null
-                  ? createUniqueSdkName(sdkType, sdkPath, allSdks)
-                  : createUniqueSdkName(customSdkSuggestedName, allSdks);
+                  ? createUniqueSdkName(sdkType, sdkPath, sdkModel)
+                  : createUniqueSdkName(customSdkSuggestedName, sdkModel);
       }
 
       sdk = new SdkImpl(sdkName, sdkType);
@@ -144,6 +144,7 @@ public class SdkConfigurationUtil {
    * @return newly created SDK, or null.
    */
   @Nullable
+  @RequiredDispatchThread
   public static Sdk createAndAddSDK(final String path, SdkType sdkType, boolean predefined) {
     VirtualFile sdkHome = ApplicationManager.getApplication().runWriteAction(new Computable<VirtualFile>() {
       @Override
@@ -152,7 +153,7 @@ public class SdkConfigurationUtil {
       }
     });
     if (sdkHome != null) {
-      final Sdk newSdk = setupSdk(SdkTable.getInstance().getAllSdks(), sdkHome, sdkType, true, predefined, null, null);
+      final Sdk newSdk = setupSdk(SdkTable.getInstance(), sdkHome, sdkType, true, predefined, null, null);
       if (newSdk != null) {
         addSdk(newSdk);
       }
@@ -161,13 +162,13 @@ public class SdkConfigurationUtil {
     return null;
   }
 
-  public static String createUniqueSdkName(SdkType type, String home, final Sdk[] sdks) {
-    return createUniqueSdkName(type.suggestSdkName(null, home), sdks);
+  public static String createUniqueSdkName(SdkType type, String home, final SdkModel sdkModel) {
+    return createUniqueSdkName(type.suggestSdkName(null, home), sdkModel);
   }
 
-  public static String createUniqueSdkName(final String suggestedName, final Sdk[] sdks) {
+  public static String createUniqueSdkName(final String suggestedName, final SdkModel sdkModel) {
     final Set<String> names = new HashSet<String>();
-    for (Sdk jdk : sdks) {
+    for (Sdk jdk : sdkModel.getSdks()) {
       names.add(jdk.getName());
     }
     String newSdkName = suggestedName;

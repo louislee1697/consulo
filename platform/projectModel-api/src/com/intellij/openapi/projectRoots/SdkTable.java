@@ -21,21 +21,39 @@ import com.intellij.util.messages.Topic;
 import org.consulo.lombok.annotations.ApplicationService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mustbe.consulo.DeprecationInfo;
+import org.mustbe.consulo.Exported;
 import org.mustbe.consulo.RequiredWriteAction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationService
-public abstract class SdkTable {
+public abstract class SdkTable implements SdkModel{
   public static Topic<SdkTableListener> SDK_TABLE_TOPIC = Topic.create("Sdk table", SdkTableListener.class);
 
+  @Override
   @Nullable
   public abstract Sdk findSdk(String name);
 
   @NotNull
-  public abstract Sdk[] getAllSdks();
+  @Deprecated
+  @DeprecationInfo(value = "Use #getSdks()", until = "1.0")
+  public final Sdk[] getAllSdks() {
+    return getSdks();
+  }
 
-  public abstract List<Sdk> getSdksOfType(SdkTypeId type);
+  @NotNull
+  @Exported
+  public List<Sdk> getSdksOfType(SdkTypeId type) {
+    List<Sdk> result = new ArrayList<Sdk>();
+    for (Sdk sdk : getSdks()) {
+      if (sdk.getSdkType() == type) {
+        result.add(sdk);
+      }
+    }
+    return result;
+  }
 
   @Nullable
   public Sdk findMostRecentSdkOfType(final SdkTypeId type) {
@@ -50,7 +68,7 @@ public abstract class SdkTable {
   @Nullable
   public Sdk findMostRecentSdk(@NotNull Condition<Sdk> condition) {
     Sdk found = null;
-    for (Sdk each : getAllSdks()) {
+    for (Sdk each : getSdks()) {
       if (!condition.value(each)) continue;
       if (found == null) {
         found = each;
@@ -61,6 +79,7 @@ public abstract class SdkTable {
     return found;
   }
 
+  @Override
   @RequiredWriteAction
   public abstract void addSdk(@NotNull Sdk sdk);
 
@@ -75,7 +94,15 @@ public abstract class SdkTable {
   public abstract SdkTypeId getSdkTypeByName(String name);
 
   @Nullable
-  public abstract Sdk findPredefinedSdkByType(@NotNull SdkTypeId sdkType);
+  @Exported
+  public Sdk findPredefinedSdkByType(@NotNull SdkTypeId sdkType) {
+    for (Sdk sdk : getSdks()) {
+      if(sdk.isPredefined() && sdk.getSdkType() == sdkType) {
+        return sdk;
+      }
+    }
+    return null;
+  }
 
   @NotNull
   public abstract Sdk createSdk(final String name, final SdkTypeId sdkType);

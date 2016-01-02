@@ -25,7 +25,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectBundle;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkModel;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
@@ -45,6 +44,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mustbe.consulo.RequiredDispatchThread;
 
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
@@ -62,7 +62,7 @@ public class SdkListConfigurable extends BaseStructureConfigurable {
 
   private static final UnknownSdkType ourUnknownSdkType = UnknownSdkType.getInstance("UNKNOWN_BUNDLE");
   private final ProjectSdksModel mySdksTreeModel;
-  private final SdkModel.Listener myListener = new SdkModel.Listener() {
+  private final ProjectSdksModel.Listener myListener = new ProjectSdksModel.Listener() {
     @Override
     public void sdkAdded(Sdk sdk) {
     }
@@ -97,12 +97,13 @@ public class SdkListConfigurable extends BaseStructureConfigurable {
       super(CommonBundle.message("button.copy"), CommonBundle.message("button.copy"), AllIcons.Actions.Copy);
     }
 
+    @RequiredDispatchThread
     @Override
-    public void actionPerformed(final AnActionEvent e) {
+    public void actionPerformed(@NotNull final AnActionEvent e) {
       final Object o = getSelectedObject();
       if (o instanceof SdkImpl) {
         final SdkImpl selected = (SdkImpl)o;
-        String defaultNewName = SdkConfigurationUtil.createUniqueSdkName(selected.getName(), mySdksTreeModel.getSdks());
+        String defaultNewName = SdkConfigurationUtil.createUniqueSdkName(selected.getName(), mySdksTreeModel);
         final String newName = Messages.showInputDialog("Enter bundle name:", "Copy Bundle", null, defaultNewName, new NonEmptyInputValidator() {
           @Override
           public boolean checkInput(String inputString) {
@@ -124,8 +125,9 @@ public class SdkListConfigurable extends BaseStructureConfigurable {
       }
     }
 
+    @RequiredDispatchThread
     @Override
-    public void update(final AnActionEvent e) {
+    public void update(@NotNull final AnActionEvent e) {
       if (myTree.getSelectionPaths() == null || myTree.getSelectionPaths().length != 1) {
         e.getPresentation().setEnabled(false);
       }
@@ -301,6 +303,7 @@ public class SdkListConfigurable extends BaseStructureConfigurable {
     myTree.setRootVisible(false);
   }
 
+  @RequiredDispatchThread
   @Override
   public void apply() throws ConfigurationException {
     boolean modifiedSdks = false;

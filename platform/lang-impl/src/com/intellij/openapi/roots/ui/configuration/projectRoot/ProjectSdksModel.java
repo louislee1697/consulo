@@ -37,9 +37,11 @@ import com.intellij.util.ArrayUtilRt;
 import com.intellij.util.Consumer;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.containers.ContainerUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mustbe.consulo.DeprecationInfo;
 import org.mustbe.consulo.RequiredDispatchThread;
+import org.mustbe.consulo.RequiredWriteAction;
 
 import javax.swing.*;
 import java.util.*;
@@ -49,6 +51,40 @@ import java.util.*;
  * Date: 05-Jun-2006
  */
 public class ProjectSdksModel implements SdkModel {
+  public static interface Listener extends EventListener {
+    /**
+     * Called when a JDK has been added.
+     *
+     * @param sdk the added JDK.
+     */
+    void sdkAdded(Sdk sdk);
+
+    /**
+     * Called before a JDK is removed.
+     *
+     * @param sdk the removed JDK.
+     */
+    void beforeSdkRemove(Sdk sdk);
+
+    /**
+     * Called when a JDK has been changed or renamed.
+     *
+     * @param sdk          the changed or renamed JDK.
+     * @param previousName the old name of the changed or renamed JDK.
+     * @since 5.0.1
+     */
+    void sdkChanged(Sdk sdk, String previousName);
+
+    /**
+     * Called when the home directory of a JDK has been changed.
+     * @param sdk        the changed JDK.
+     * @param newSdkHome the new home directory.
+     */
+    void sdkHomeSelected(Sdk sdk, String newSdkHome);
+
+  }
+
+
   private static final Logger LOG = Logger.getInstance("com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel");
 
   private final HashMap<Sdk, Sdk> mySdks = new HashMap<Sdk, Sdk>();
@@ -58,11 +94,11 @@ public class ProjectSdksModel implements SdkModel {
 
   private boolean myInitialized = false;
 
-  @Override
   public Listener getMulticaster() {
     return mySdkEventsDispatcher.getMulticaster();
   }
 
+  @NotNull
   @Override
   public Sdk[] getSdks() {
     return ContainerUtil.toArray(mySdks.values(), Sdk.ARRAY_FACTORY);
@@ -77,12 +113,10 @@ public class ProjectSdksModel implements SdkModel {
     return null;
   }
 
-  @Override
   public void addListener(Listener listener) {
     mySdkEventsDispatcher.addListener(listener);
   }
 
-  @Override
   public void removeListener(Listener listener) {
     mySdkEventsDispatcher.removeListener(listener);
   }
@@ -289,7 +323,7 @@ public class ProjectSdksModel implements SdkModel {
       SdkConfigurationUtil.selectSdkHome(type, new Consumer<String>() {
         @Override
         public void consume(final String home) {
-          String newSdkName = SdkConfigurationUtil.createUniqueSdkName(type, home, getSdks());
+          String newSdkName = SdkConfigurationUtil.createUniqueSdkName(type, home, ProjectSdksModel.this);
           final SdkImpl newSdk = new SdkImpl(newSdkName, type);
           newSdk.setHomePath(home);
           setupSdk(newSdk, callback);
@@ -311,6 +345,7 @@ public class ProjectSdksModel implements SdkModel {
     doAdd(newSdk, callback);
   }
 
+  @RequiredWriteAction
   @Override
   public void addSdk(Sdk sdk) {
     doAdd(sdk, null);

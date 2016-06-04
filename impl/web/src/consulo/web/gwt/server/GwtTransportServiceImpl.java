@@ -51,6 +51,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.util.BitUtil;
+import consulo.web.AppInit;
 import consulo.web.gwt.shared.GwtTransportService;
 import consulo.web.gwt.shared.transport.*;
 import org.jetbrains.annotations.NotNull;
@@ -92,6 +93,11 @@ public class GwtTransportServiceImpl extends RemoteServiceServlet implements Gwt
       e.getMessage();
     }
     return null;
+  }
+
+  @Override
+  public boolean getApplicationStatus() {
+    return AppInit.getOrInit();
   }
 
   @NotNull

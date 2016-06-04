@@ -19,11 +19,9 @@ import com.intellij.idea.IdeaApplication;
 import com.intellij.idea.starter.ApplicationStarter;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.projectRoots.SdkTable;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.projectRoots.impl.SdkImpl;
-import com.intellij.util.ThreeState;
 import consulo.web.AppInit;
 
 /**
@@ -39,11 +37,7 @@ public class WebStarter extends ApplicationStarter {
 
   @Override
   public void main(String[] args) {
-
-    EditorColorsManager colorsManager = EditorColorsManager.getInstance();
-   // EditorColorsScheme darcula = colorsManager.getScheme("Consulo Light");
-    //colorsManager.setGlobalScheme(darcula);
-    AppInit.inited = ThreeState.YES;
+    AppInit.activate();
 
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override

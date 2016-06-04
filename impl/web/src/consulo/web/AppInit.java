@@ -19,41 +19,44 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.idea.Main;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.ThreeState;
 import org.mustbe.consulo.application.ApplicationProperties;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author VISTALL
  * @since 15-May-16
  */
 public class AppInit {
-  public static ThreeState inited = ThreeState.NO;
+  private static final int NONE = 0;
+  private static final int IN_PROGRESS = 1;
+  private static final int ACTIVATED = 2;
 
-  public static boolean init() {
-    switch (inited) {
-      case YES:
-        return true;
-      case NO:
-        inited = ThreeState.UNSURE;
-        new Thread() {
-          @Override
-          public void run() {
-            initApplication();
-          }
-        }.start();
-        return false;
-      default:
-        return false;
+  private static AtomicInteger ourState = new AtomicInteger(NONE);
+
+  public static boolean getOrInit() {
+    if (ourState.compareAndSet(NONE, IN_PROGRESS)) {
+      new Thread() {
+        @Override
+        public void run() {
+          initApplication();
+        }
+      }.start();
     }
+
+    return ourState.get() == ACTIVATED;
   }
 
-  private static void initApplication()  {
+  public static void activate() {
+    ourState.compareAndSet(IN_PROGRESS, ACTIVATED);
+  }
+
+  private static void initApplication() {
     try {
-     // Logger.setFactory(OurWebLoggerFactory.class);
+      // Logger.setFactory(OurWebLoggerFactory.class);
 
       File consuloWebJar = new File(URLDecoder.decode(AppInit.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF8"));
       File libFile = consuloWebJar.getParentFile();

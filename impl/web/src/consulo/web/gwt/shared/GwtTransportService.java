@@ -29,6 +29,8 @@ import java.util.List;
  */
 @RemoteServiceRelativePath("transport")
 public interface GwtTransportService extends RemoteService {
+  boolean getApplicationStatus();
+
   GwtProjectInfo getProjectInfo(String path);
 
   @NotNull

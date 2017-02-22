@@ -195,6 +195,8 @@
           <orderEntry type="library" name="JUnit4" level="project" />
           <orderEntry type="library" name="automaton" level="project" />
           <orderEntry type="library" name="CGLIB" level="project" />
+          <orderEntry type="library" exploded="" name="guice" level="project" />
+          <orderEntry type="library" exploded="" name="javax.inject" level="project" />
         </module-layer>
       </module>
       <module name="impl/core-impl" dirurl="file://$PROJECT_DIR$/platform/core-impl" current-layer="Default">

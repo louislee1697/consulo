@@ -15,6 +15,7 @@
  */
 package com.intellij.openapi.components;
 
+import com.google.inject.Injector;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.util.Condition;
@@ -79,7 +80,15 @@ public interface ComponentManager extends UserDataHolder, Disposable {
   <T> T[] getComponents(@NotNull Class<T> baseClass);
 
   @NotNull
-  PicoContainer getPicoContainer();
+  @Deprecated
+  default PicoContainer getPicoContainer() {
+    throw new UnsupportedOperationException();
+  }
+
+  @NotNull
+  default Injector getInjector() {
+    throw new UnsupportedOperationException();
+  }
 
   @NotNull
   MessageBus getMessageBus();

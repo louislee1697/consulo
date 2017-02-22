@@ -15,9 +15,9 @@
  */
 package com.intellij.openapi.project.impl;
 
+import com.google.inject.Binder;
 import com.intellij.ide.RecentProjectsManagerBase;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.startup.StartupManagerEx;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -25,7 +25,7 @@ import com.intellij.openapi.application.PathMacros;
 import com.intellij.openapi.application.ex.ApplicationEx;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.application.impl.ApplicationInfoImpl;
-import com.intellij.openapi.components.ExtensionAreas;
+import com.intellij.openapi.components.ComponentConfig;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.StorageScheme;
 import com.intellij.openapi.components.TrackingPathMacroSubstitutor;
@@ -56,9 +56,7 @@ import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.picocontainer.*;
-import org.picocontainer.defaults.CachingComponentAdapter;
-import org.picocontainer.defaults.ConstructorInjectionComponentAdapter;
+import org.picocontainer.MutablePicoContainer;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -130,53 +128,16 @@ public class ProjectImpl extends PlatformComponentManagerImpl implements Project
   }
 
   @Override
-  protected void bootstrapPicoContainer(@NotNull String name) {
-    Extensions.instantiateArea(ExtensionAreas.PROJECT, this, null);
-    super.bootstrapPicoContainer(name);
-    final MutablePicoContainer picoContainer = getPicoContainer();
+  protected void bootstrapBinder(String name, Binder binder) {
+    super.bootstrapBinder(name, binder);
+    binder.bind(ProjectPathMacroManager.class);
+    binder.bind(IComponentStore.class).to(isDefault() ? DefaultProjectStoreImpl.class : ProjectStoreImpl.class);
+  }
 
-    picoContainer.registerComponentImplementation(ProjectPathMacroManager.class);
-    picoContainer.registerComponent(new ComponentAdapter() {
-      ComponentAdapter myDelegate;
-
-      public ComponentAdapter getDelegate() {
-        if (myDelegate == null) {
-
-          final Class storeClass = isDefault() ? DefaultProjectStoreImpl.class : ProjectStoreImpl.class;
-          myDelegate = new CachingComponentAdapter(
-            new ConstructorInjectionComponentAdapter(storeClass, storeClass, null, true));
-        }
-
-        return myDelegate;
-      }
-
-      @Override
-      public Object getComponentKey() {
-        return IComponentStore.class;
-      }
-
-      @Override
-      public Class getComponentImplementation() {
-        return getDelegate().getComponentImplementation();
-      }
-
-      @Override
-      public Object getComponentInstance(final PicoContainer container) throws PicoInitializationException, PicoIntrospectionException {
-        return getDelegate().getComponentInstance(container);
-      }
-
-      @Override
-      public void verify(final PicoContainer container) throws PicoIntrospectionException {
-        getDelegate().verify(container);
-      }
-
-      @Override
-      public void accept(final PicoVisitor visitor) {
-        visitor.visitComponentAdapter(this);
-        getDelegate().accept(visitor);
-      }
-    });
-
+  @NotNull
+  @Override
+  protected ComponentConfig[] selectComponentConfigs(IdeaPluginDescriptor descriptor) {
+    return descriptor.getProjectComponents();
   }
 
   @NotNull
@@ -209,13 +170,6 @@ public class ProjectImpl extends PlatformComponentManagerImpl implements Project
     return isOpen() && !isDisposed() && StartupManagerEx.getInstanceEx(this).startupActivityPassed();
   }
 
-  public void loadProjectComponents() {
-    final IdeaPluginDescriptor[] plugins = PluginManagerCore.getPlugins();
-    for (IdeaPluginDescriptor plugin : plugins) {
-      if (PluginManagerCore.shouldSkipPlugin(plugin)) continue;
-      loadComponentsConfiguration(plugin.getProjectComponents(), plugin, isDefault());
-    }
-  }
 
   @Override
   @NotNull

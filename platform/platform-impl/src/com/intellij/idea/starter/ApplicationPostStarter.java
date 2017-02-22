@@ -15,10 +15,14 @@
  */
 package com.intellij.idea.starter;
 
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.impl.ApplicationImpl;
+import com.intellij.openapi.application.impl.ApplicationInfoImpl;
+import com.intellij.ui.Splash;
 import consulo.annotations.Internal;
 import consulo.start.CommandLineArgs;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Internal
 public abstract class ApplicationPostStarter {
@@ -26,7 +30,15 @@ public abstract class ApplicationPostStarter {
 
 
   public void createApplication(boolean internal, boolean isUnitTestMode, boolean isHeadlessMode, boolean isCommandline, CommandLineArgs args) {
+    initPlugins(null);
+
     new ApplicationImpl(internal, isUnitTestMode, isHeadlessMode, isCommandline, IDEA_APPLICATION, null);
+  }
+
+  protected void initPlugins(@Nullable Splash splash) {
+    PluginManagerCore.BUILD_NUMBER = ApplicationInfoImpl.getShadowInstance().getBuild().asString();
+
+    PluginManagerCore.initPlugins(splash);
   }
 
   public void premain(@NotNull CommandLineArgs args) {

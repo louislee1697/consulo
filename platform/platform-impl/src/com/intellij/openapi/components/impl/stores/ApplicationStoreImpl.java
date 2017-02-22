@@ -31,6 +31,7 @@ import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
 import java.io.IOException;
 
 public class ApplicationStoreImpl extends ComponentStoreImpl implements IApplicationStore {
@@ -44,11 +45,10 @@ public class ApplicationStoreImpl extends ComponentStoreImpl implements IApplica
 
   private String myConfigPath;
 
-  // created from PicoContainer
-  @SuppressWarnings({"UnusedDeclaration"})
+  @Inject
   public ApplicationStoreImpl(final ApplicationEx2 application, PathMacroManager pathMacroManager) {
     myApplication = application;
-    myStateStorageManager = new StateStorageManagerImpl(pathMacroManager.createTrackingSubstitutor(), ROOT_ELEMENT_NAME, application, application.getPicoContainer()) {
+    myStateStorageManager = new StateStorageManagerImpl(pathMacroManager.createTrackingSubstitutor(), ROOT_ELEMENT_NAME, application, application.getInjector()) {
       private boolean myConfigDirectoryRefreshed;
 
       @Override

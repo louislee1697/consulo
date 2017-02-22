@@ -15,6 +15,7 @@
  */
 package com.intellij.openapi.components.impl.stores;
 
+import com.google.inject.Injector;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -34,8 +35,6 @@ import gnu.trove.THashMap;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.picocontainer.MutablePicoContainer;
-import org.picocontainer.PicoContainer;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -52,20 +51,20 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
     ourHeadlessEnvironment = app.isHeadlessEnvironment() || app.isUnitTestMode();
   }
 
-  private final Map<String, String> myMacros = new LinkedHashMap<String, String>();
+  private final Map<String, String> myMacros = new LinkedHashMap<>();
   private final Lock myStorageLock = new ReentrantLock();
-  private final Map<String, StateStorage> myStorages = new THashMap<String, StateStorage>();
+  private final Map<String, StateStorage> myStorages = new THashMap<>();
   private final TrackingPathMacroSubstitutor myPathMacroSubstitutor;
   private final String myRootTagName;
-  private final PicoContainer myPicoContainer;
+  private final Injector myInjector;
 
   private StreamProvider myStreamProvider;
 
   public StateStorageManagerImpl(@Nullable TrackingPathMacroSubstitutor pathMacroSubstitutor,
                                  String rootTagName,
                                  @Nullable Disposable parentDisposable,
-                                 PicoContainer picoContainer) {
-    myPicoContainer = picoContainer;
+                                 @NotNull Injector injector) {
+    myInjector = injector;
     myRootTagName = rootTagName;
     myPathMacroSubstitutor = pathMacroSubstitutor;
     if (parentDisposable != null) {
@@ -148,7 +147,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
       StateStorage storage = myStorages.get(fileSpec);
       if (storage instanceof FileBasedStorage) {
         if (result == null) {
-          result = new SmartList<FileBasedStorage>();
+          result = new SmartList<>();
         }
         result.add((FileBasedStorage)storage);
       }
@@ -171,12 +170,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
   @SuppressWarnings("deprecation")
   @NotNull
   private StateStorage createStateStorage(Storage storageSpec) {
-    if (!storageSpec.storageClass().equals(StateStorage.class)) {
-      String key = UUID.randomUUID().toString();
-      ((MutablePicoContainer)myPicoContainer).registerComponentImplementation(key, storageSpec.storageClass());
-      return (StateStorage)myPicoContainer.getComponentInstance(key);
-    }
-    else if (!storageSpec.stateSplitter().equals(StateSplitter.class)) {
+    if (!storageSpec.stateSplitter().equals(StateSplitter.class)) {
       StateSplitter splitter = ReflectionUtil.newInstance(storageSpec.stateSplitter());
       return new DirectoryBasedStorage(myPathMacroSubstitutor, expandMacros(storageSpec.file()), splitter, this, createStorageTopicListener());
     }
@@ -186,12 +180,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
   }
 
   private static String getStorageSpecId(Storage storageSpec) {
-    if (!storageSpec.storageClass().equals(StateStorage.class)) {
-      return storageSpec.storageClass().getName();
-    }
-    else {
-      return storageSpec.file();
-    }
+    return storageSpec.file();
   }
 
   @Override
@@ -235,7 +224,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
 
   @Nullable
   protected StateStorage.Listener createStorageTopicListener() {
-    MessageBus messageBus = (MessageBus)myPicoContainer.getComponentInstanceOfType(MessageBus.class);
+    MessageBus messageBus = myInjector.getInstance(MessageBus.class);
     return messageBus == null ? null : messageBus.syncPublisher(StateStorage.STORAGE_TOPIC);
   }
 
@@ -295,7 +284,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
   }
 
   protected class StateStorageManagerExternalizationSession implements ExternalizationSession {
-    final Map<StateStorage, StateStorage.ExternalizationSession> mySessions = new LinkedHashMap<StateStorage, StateStorage.ExternalizationSession>();
+    final Map<StateStorage, StateStorage.ExternalizationSession> mySessions = new LinkedHashMap<>();
 
     @Override
     public void setState(@NotNull Storage[] storageSpecs, @NotNull Object component, @NotNull String componentName, @NotNull Object state) {
@@ -348,7 +337,7 @@ public abstract class StateStorageManagerImpl implements StateStorageManager, Di
             if (externalizationSessions.size() == 1) {
               return Collections.singletonList(saveSession);
             }
-            saveSessions = new SmartList<SaveSession>();
+            saveSessions = new SmartList<>();
           }
           saveSessions.add(saveSession);
         }

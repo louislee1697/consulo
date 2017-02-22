@@ -46,6 +46,7 @@ import java.awt.*;
 
 /**
  * Used via reflection
+ *
  * @see com.intellij.idea.ApplicationStarter#getStarterClass(boolean, boolean)
  */
 @SuppressWarnings("unused")
@@ -69,6 +70,8 @@ public class DefaultApplicationPostStarter extends ApplicationPostStarter {
         mySplash.show();
       }
     }
+
+    initPlugins(mySplash);
 
     new ApplicationImpl(internal, isUnitTestMode, isHeadlessMode, isCommandline, IDEA_APPLICATION, mySplash);
   }
@@ -119,7 +122,7 @@ public class DefaultApplicationPostStarter extends ApplicationPostStarter {
     }
 
     app.invokeLater(() -> {
-      if(!args.isNoRecentProjects()) {
+      if (!args.isNoRecentProjects()) {
         Project projectFromCommandLine = null;
         if (myApplicationStarter.isPerformProjectLoad()) {
           projectFromCommandLine = CommandLineProcessor.processExternalCommandLine(args, null);

@@ -15,18 +15,20 @@
  */
 package com.intellij.openapi.application.impl;
 
+import com.google.inject.Binder;
 import com.intellij.CommonBundle;
 import com.intellij.concurrency.IdeaForkJoinWorkerThreadFactory;
 import com.intellij.diagnostic.ThreadDumper;
 import com.intellij.ide.*;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.idea.ApplicationStarter;
 import com.intellij.idea.StartupUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.*;
 import com.intellij.openapi.application.ex.ApplicationEx;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.components.ComponentConfig;
+import com.intellij.openapi.components.PathMacroManager;
 import com.intellij.openapi.components.StateStorageException;
 import com.intellij.openapi.components.impl.ApplicationPathMacroManager;
 import com.intellij.openapi.components.impl.PlatformComponentManagerImpl;
@@ -126,7 +128,8 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
   private final ExecutorService ourThreadExecutorsService = PooledThreadExecutor.INSTANCE;
   private boolean myIsFiringLoadingEvent = false;
   private boolean myLoaded = false;
-  @NonNls private static final String WAS_EVER_SHOWN = "was.ever.shown";
+  @NonNls
+  private static final String WAS_EVER_SHOWN = "was.ever.shown";
 
   private static final int IS_EDT_FLAG = 1 << 30; // we don't mess with sign bit since we want to do arithmetic
   private static final int IS_READ_LOCK_ACQUIRED_FLAG = 1 << 29;
@@ -168,16 +171,26 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
   };
 
   @Override
-  protected void bootstrapPicoContainer(@NotNull String name) {
-    super.bootstrapPicoContainer(name);
-    getPicoContainer().registerComponentImplementation(IComponentStore.class, ApplicationStoreImpl.class);
-    getPicoContainer().registerComponentImplementation(ApplicationPathMacroManager.class);
+  protected void bootstrapBinder(String name, Binder binder) {
+    binder.bind(Application.class).toInstance(this);
+    binder.bind(ApplicationEx.class).toInstance(this);
+    binder.bind(ApplicationEx2.class).toInstance(this);
+
+    super.bootstrapBinder(name, binder);
+    binder.bind(IComponentStore.class).to(ApplicationStoreImpl.class);
+    binder.bind(PathMacroManager.class).to(ApplicationPathMacroManager.class);
+  }
+
+  @NotNull
+  @Override
+  protected ComponentConfig[] selectComponentConfigs(IdeaPluginDescriptor descriptor) {
+    return descriptor.getAppComponents();
   }
 
   @Override
   @NotNull
   public IApplicationStore getStateStore() {
-    return (IApplicationStore)getPicoContainer().getComponentInstance(IComponentStore.class);
+    return (IApplicationStore)getInjector().getInstance(IComponentStore.class);
   }
 
   @Override
@@ -199,8 +212,6 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
 
     ApplicationManager.setApplication(this, myLastDisposable); // reset back to null only when all components already disposed
 
-    getPicoContainer().registerComponentInstance(Application.class, this);
-
     AWTExceptionHandler.register(); // do not crash AWT on exceptions
 
     String debugDisposer = System.getProperty("idea.disposer.debug");
@@ -215,8 +226,6 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
     myCommandLineMode = isCommandLine;
 
     myDoNotSave = isUnitTestMode || isHeadless;
-
-    loadApplicationComponents();
 
     if (myTestModeFlag) {
       registerShutdownHook();
@@ -309,12 +318,7 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
         }
       }
     }
-    runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        Disposer.dispose(ApplicationImpl.this);
-      }
-    });
+    runWriteAction(() -> Disposer.dispose(ApplicationImpl.this));
 
     Disposer.assertIsEmpty();
     return true;
@@ -327,17 +331,6 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
 
   private static boolean holdsReadLock(Status status) {
     return BitUtil.isSet(status.flags, IS_READ_LOCK_ACQUIRED_FLAG);
-  }
-
-  private void loadApplicationComponents() {
-    PluginManagerCore.BUILD_NUMBER = ApplicationInfoImpl.getShadowInstance().getBuild().asString();
-    PluginManagerCore.initPlugins(mySplash);
-    IdeaPluginDescriptor[] plugins = PluginManagerCore.getPlugins();
-    for (IdeaPluginDescriptor plugin : plugins) {
-      if (!PluginManagerCore.shouldSkipPlugin(plugin)) {
-        loadComponentsConfiguration(plugin.getAppComponents(), plugin, false);
-      }
-    }
   }
 
   @Override
@@ -1202,7 +1195,8 @@ public class ApplicationImpl extends PlatformComponentManagerImpl implements App
   }
 
   private class WriteAccessToken extends AccessToken {
-    @NotNull private final Class clazz;
+    @NotNull
+    private final Class clazz;
 
     public WriteAccessToken(@NotNull Class clazz) {
       this.clazz = clazz;

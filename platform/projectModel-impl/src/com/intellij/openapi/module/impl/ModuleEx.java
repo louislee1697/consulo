@@ -34,7 +34,6 @@ public interface ModuleEx extends Module {
   };
 
   void init();
-  void loadModuleComponents();
   void moduleAdded();
   void projectOpened();
   void projectClosed();

@@ -289,7 +289,6 @@ public class ProjectManagerImpl extends ProjectManagerEx implements PersistentSt
       else {
         project.getStateStore().load();
       }
-      project.loadProjectComponents();
       project.init();
       succeed = true;
     }

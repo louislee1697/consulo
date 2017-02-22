@@ -38,6 +38,8 @@ public @interface Storage {
    */
   RoamingType roamingType() default RoamingType.PER_USER;
 
+  @Deprecated
   Class<? extends StateStorage> storageClass() default StateStorage.class;
+
   Class<? extends StateSplitter> stateSplitter() default StateSplitter.class;
 }

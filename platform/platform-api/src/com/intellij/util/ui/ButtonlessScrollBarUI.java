@@ -43,15 +43,15 @@ public class ButtonlessScrollBarUI extends BasicScrollBarUI implements OwnScroll
 
   public static void setOwnScrollBarImplementationUI(@NotNull JScrollBar scrollBar, @NotNull Factory<JButton> incButtonFactory) {
     ScrollBarUI ui = (ScrollBarUI)UIManager.getUI(scrollBar);
-    if(!(ui instanceof OwnScrollBarUI)) {
-      BasicScrollBarUI normal = createNormal();
-      ((OwnScrollBarUI)normal).setIncreaseButtonFactory(incButtonFactory);
-      scrollBar.setUI(normal);
-    }
-    else {
-      ((OwnScrollBarUI)ui).setIncreaseButtonFactory(incButtonFactory);
+    //if(!(ui instanceof OwnScrollBarUI)) {
+    //  BasicScrollBarUI normal = createNormal();
+    //  ((OwnScrollBarUI)normal).setIncreaseButtonFactory(incButtonFactory);
+    //  scrollBar.setUI(normal);
+    //}
+    //else {
+     //((OwnScrollBarUI)ui).setIncreaseButtonFactory(incButtonFactory);
       scrollBar.setUI(ui);
-    }
+    //}
   }
 
   public static JBColor getGradientLightColor() {

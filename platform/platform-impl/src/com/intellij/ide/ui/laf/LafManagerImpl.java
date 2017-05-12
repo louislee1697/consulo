@@ -155,6 +155,7 @@ public final class LafManagerImpl extends LafManager implements ApplicationCompo
     }
     lafList.add(new DarculaLookAndFeelInfo());
 
+    lafList.add(new UIManager.LookAndFeelInfo("sub", "org.pushingpixels.substance.api.skin.SubstanceDustCoffeeLookAndFeel"));
     myLaFs = lafList.toArray(new UIManager.LookAndFeelInfo[lafList.size()]);
 
     myCurrentLaf = getDefaultLaf();
@@ -447,6 +448,9 @@ public final class LafManagerImpl extends LafManager implements ApplicationCompo
     fixGtkPopupStyle();
 
     fixMenuIssues(uiDefaults);
+
+    uiDefaults.put("ComboBoxButtonUI", ComboBoxButtonUI.class.getName());
+    uiDefaults.put("ActionButtonUI", ActionButtonUI.class.getName());
 
     if (UIUtil.isUnderAquaLookAndFeel()) {
       uiDefaults.put("Panel.opaque", Boolean.TRUE);

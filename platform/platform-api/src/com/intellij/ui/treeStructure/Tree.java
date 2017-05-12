@@ -93,7 +93,8 @@ public class Tree extends JTree implements ComponentWithEmptyText, ComponentWith
         actualUI = new WideSelectionTreeUI(isWideSelection(), getWideSelectionBackgroundCondition());
       }
     }
-    super.setUI(actualUI);
+    final TreeUI finalActualUI = actualUI;
+    UIUtil.invokeAndWaitIfNeeded((Runnable)() -> super.setUI(finalActualUI));
   }
 
   @Override

@@ -1,0 +1,8 @@
+<component name="libraryTable">
+  <library name="substance">
+    <binaries>
+      <root url="jar://$PROJECT_DIR$/lib/trident-1.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/substance-7.1.00-dev.jar!/" />
+    </binaries>
+  </library>
+</component>

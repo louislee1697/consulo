@@ -1528,7 +1528,7 @@ public class UIUtil {
   }
 
   public static Insets getListViewportPadding() {
-    if (isUnderNativeMacLookAndFeel()) {
+    if (isUnderNativeMacLookAndFeel() || Boolean.TRUE) {
       return new Insets(1, 0, 1, 0);
     }
     return UIManager.getInsets("listPopupInsets");
@@ -2181,7 +2181,7 @@ public class UIUtil {
   }
 
   public static boolean isStandardMenuLAF() {
-    return isWinLafOnVista() || isUnderNimbusLookAndFeel() || isUnderGTKLookAndFeel() || isUnderBuildInLaF();
+    return isWinLafOnVista() || isUnderNimbusLookAndFeel() || isUnderGTKLookAndFeel() || isUnderBuildInLaF() || Boolean.TRUE;
   }
 
   public static Color getFocusedFillColor() {

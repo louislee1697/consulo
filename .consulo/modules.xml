@@ -127,7 +127,7 @@
       </module>
       <module name="consulo" dirurl="file://$PROJECT_DIR$" current-layer="Default">
         <module-layer name="Default">
-          <extension id="java" sdk-name="1.8" language-level-name="JDK_1_8" />
+          <extension id="java" sdk-name="1.9" language-level-name="JDK_1_8" />
           <content url="file://$MODULE_DIR$">
             <content-folder type="EXCLUDED" url="file://$MODULE_DIR$/.consulo/sandbox" />
           </content>
